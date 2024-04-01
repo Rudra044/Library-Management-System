@@ -1,0 +1,37 @@
+db - Mysql
+framework - Flask
+User Management:
+Users should be able to register with the system by providing a username and password.
+Users should be able to login and receive an authentication token.
+Users should be able to view their profile information and update it.
+Users should be able to delete their account.
+
+
+Book Management:
+Books should have attributes like title, author, ISBN, genre, and publication year.
+Authenticated users should be able to add new books.
+Users should be able to retrieve a list of all books, as well as retrieve details of a specific book by its ID.
+Users should be able to update the details of a book they added.
+Users should be able to delete a book they added.
+
+
+Author Management:
+Authors should have attributes like name, biography, and nationality.
+Authenticated users should be able to add new authors.
+Users should be able to retrieve a list of all authors, as well as retrieve details of a specific author by their ID.
+Users should be able to update the details of an author they added.
+Users should be able to delete an author they added.
+
+
+Authorization:
+Only authenticated users should be able to perform CRUD operations on books and authors.
+Users should only be able to modify or delete their own books and authors.
+
+
+Validation and Error Handling:
+Implement proper validation for input data and handle errors gracefully, returning meaningful error messages and appropriate HTTP status codes.
+
+
+Security:
+Implement secure password storage using hashing algorithms.
+Use JWT (JSON Web Tokens) for authentication.
