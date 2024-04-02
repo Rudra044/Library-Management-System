@@ -4,15 +4,13 @@ db = SQLAlchemy()
 
 
 
-class Profile(db.Model):
+class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email_id = db.Column(db.String(250), unique=True, nullable=False)
     first_name = db.Column(db.String(250),  nullable=True)
     last_name=db.Column(db.String(250),  nullable=True)
     phone_number=db.Column(db.String(250), unique=True, nullable=True)
     password = db.Column(db.String(250), nullable=False)
-    bookss = db.relationship('Books', backref='profile', cascade='all, delete')
-    authors= db.relationship('Author', backref='profile', cascade='all, delete')
 
 
     def __init__(self, email_id, first_name, last_name, phone_number,password):
@@ -31,7 +29,7 @@ class Books(db.Model):
       isbn = db.Column(db.String(250),  nullable=False)
       genre = db.Column(db.String(250),  nullable=True)
       publication_year =  db.Column(db.Integer,  nullable=False)
-      profile_id = db.Column(db.Integer, db.ForeignKey('profile.id'))
+      profile_id = db.Column(db.Integer, db.ForeignKey('user.id' , ondelete='cascade'))
 
       def __init__(self, title,  author, isbn, genre,publication_year,profile_id):
             self.title = title
@@ -47,7 +45,7 @@ class Author(db.Model):
       author_name= db.Column(db.String(250), nullable=False)
       biography = db.Column(db.String(5000), nullable=False)
       nationality = db.Column(db.String(250),  nullable=False)
-      profile_id = db.Column(db.Integer, db.ForeignKey('profile.id'))
+      profile_id = db.Column(db.Integer, db.ForeignKey('user.id',ondelete='cascade'))
 
 
       def __init__(self,author_name,biography,nationality,profile_id):
