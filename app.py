@@ -52,7 +52,8 @@ def login():
     
 @app.route('/information',methods=['GET'])
 @jwt_required()
-def get_data_by_id(user_id):
+def get_data_by_id():
+     user_id = get_jwt_identity()
      user = User.query.filter_by(id=user_id).first()
      return jsonify(user)
     
@@ -119,7 +120,7 @@ def change_password():
 
         hashed_password = bcrypt.generate_password_hash(new_password).decode('utf-8')
         user.password = hashed_password
-        db.session.commit()
+        update_details()
         return jsonify({'message': 'Password changed successfully'})
 
 
@@ -154,13 +155,17 @@ def reset_password(encoded_email_id):
     user = User.query.filter_by(email_id=email_id).first()
     if not user:
         return jsonify({'message': 'Invalid email ID'})
+    if not new_password:
+        return jsonify({'message': 'New password not provided'})
+    if not confirm_new_password:
+        return jsonify({'message': 'Confirm_New password not provided'})
     if confirm_new_password != new_password:
         return jsonify({'message': 'Confirm_New password and new password field not match'})
 
     
     hashed_password = bcrypt.generate_password_hash(new_password).decode('utf-8')
     user.password = hashed_password
-    db.session.commit()
+    update_details()
     
     return jsonify({'message': 'Password reset successfully'})
 
@@ -236,11 +241,9 @@ def delete_book_details(book_id):
 
 
 @app.route('/books', methods=['GET'])
-def get_books(book_id=None):
-    data=request.json
-    book_id=data.get('book_id')
+def get_books():
+    book_id=request.args.get('book_id')
     if book_id is None:
-
        all_books = Books.query.all()
        book_list = []
        for book in all_books:
@@ -271,7 +274,8 @@ def get_books(book_id=None):
 
 
     Author Mangemnt
-    
+
+
     
     """
 
@@ -293,7 +297,7 @@ def add_author():
                          ,profile_id=user_id)
             new_add(new_author)
             
-            return jsonify({'message': 'New book added'})
+            return jsonify({'message': 'New author added'})
     else:
         return jsonify({'error': 'Provide valid fields' })
     
@@ -301,9 +305,8 @@ def add_author():
 
 
 @app.route('/author', methods=['GET'])
-def get_author(author_id=None):
-    data=request.json
-    author_id=data.get('author_id')
+def get_author():
+    author_id = request.args.get('author_id')
     if author_id is None:
         all_authors = Author.query.all()
         author_list = []
@@ -327,10 +330,16 @@ def get_author(author_id=None):
          return jsonify({'error': 'Author not found'})
 
 
-@app.route('/author/delete/<int:author_id>', methods=['DELETE'])
+@app.route('/author/delete', methods=['DELETE'])
 @jwt_required()
-def delete_author_details(author_id):
+def delete_author_details():
     user_id = get_jwt_identity()
+    author_id = request.args.get('author_id')
+    if author_id is None:
+        authors = Author.query.filter(Author.profile_id == user_id).all()
+        for author in authors:
+            delete(author)
+            return jsonify({'message':'All authors added by you are deleted.'})
     author= Author.query.filter(db.and_(Author.profile_id==user_id , Author.id==author_id)).first()
     if author:
         delete(author)
