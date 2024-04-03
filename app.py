@@ -98,7 +98,7 @@ def delete_user():
     user = User.query.filter_by(id=user_id).first()
     if user:
         delete(user)
-        return jsonify({'message': 'data deleted'})
+        return jsonify({'message': 'Your profile is deleted'})
     else:
         return jsonify({'error': 'User cannot be deleted'})
 
@@ -114,10 +114,8 @@ def change_password():
     user = User.query.filter_by(id=user_id).first()
     if not user:
         return jsonify({'message': 'User not found'})
-
     if not bcrypt.check_password_hash(user.password, password):
         return jsonify({'message': 'Incorrect password'})
-
     if not new_password:
         return jsonify({'message': 'New password not provided'})
     if not confirm_new_password:
@@ -242,9 +240,9 @@ def delete_book_details(book_id):
         return jsonify({'error': 'Book is not added by you.'})
 
 
-@app.route('/books', methods=['GET'])
-def get_books():
-    book_id = request.args.get('book_id')
+@app.route('/book', defaults={'book_id': None}, methods=['GET'])
+@app.route('/book/<int:book_id>', methods=['GET'])
+def get_books(book_id):
     if book_id is None:
         all_books = Books.query.all()
         book_list = []
@@ -289,8 +287,8 @@ def add_author():
     nationality = data.get('nationality') 
     if author_name and biography:
         if Author.query.filter(db.and_(Author.profile_id == user_id, Author.author_name == author_name 
-                                        , Author.biography == biography)).first():
-             return jsonify({'error':'Author is already added by you.'})
+                                    , Author.biography == biography)).first():
+            return jsonify({'error':'Author is already added by you.'})
         else:
              
             new_author = Author(author_name=author_name, biography=biography, nationality=nationality
@@ -302,11 +300,9 @@ def add_author():
         return jsonify({'error': 'Provide valid fields' })
     
 
-
-
-@app.route('/author', methods=['GET'])
-def get_author():
-    author_id = request.args.get('author_id')
+@app.route('/author', defaults={'author_id': None}, methods=['GET'])
+@app.route('/author/<int:author_id>', methods=['GET'])
+def get_author(author_id=None): 
     if author_id is None:
         all_authors = Author.query.all()
         author_list = []
@@ -318,30 +314,30 @@ def get_author():
     author_details = Author.query.get(author_id)
     if author_details:
         return jsonify({
-        'id': author_details.id,
-        'author_name': author_details.author_name,
-        'biography': author_details.biography,
-        'nationality': author_details.nationality, })
+            'id': author_details.id,
+            'author_name': author_details.author_name,
+            'biography': author_details.biography,
+            'nationality': author_details.nationality, })
     else:
         return jsonify({'error': 'Author not found'})
+    
 
-
-@app.route('/author/delete', methods=['DELETE'])
+@app.route('/author/delete', defaults={'author_id': None}, methods=['DELETE'])
+@app.route('/author/delete/<int:author_id>', methods=['DELETE'])
 @jwt_required()
-def delete_author_details():
+def delete_author_details(author_id):
     user_id = get_jwt_identity()
-    author_id = request.args.get('author_id')
     if author_id is None:
         authors = Author.query.filter(Author.profile_id == user_id).all()
         for author in authors:
             delete(author)
-            return jsonify({'message': 'All authors added by you are deleted.'})
+        return jsonify({'message': 'All authors added by you are deleted.'})
     author = Author.query.filter(db.and_(Author.profile_id == user_id, Author.id == author_id)).first()
     if author:
         delete(author)
         return jsonify({'message': 'Author Details deleted'})
     else:
-        return jsonify({'error':'Author is not added by you.'})
+        return jsonify({'error': 'Author is not added by you.'})
 
 
 @app.route('/author/update/<int:author_id>', methods=['PATCH'])
