@@ -24,7 +24,7 @@ class User(db.Model):
 class Books(db.Model):
       __tablename__ = "Books"
       id = db.Column(db.Integer, primary_key=True)
-      title = db.Column(db.String(250), unique=True, nullable=False)
+      title = db.Column(db.String(250), nullable=False)
       author = db.Column(db.String(250), nullable=False)
       isbn = db.Column(db.String(250),  nullable=False)
       genre = db.Column(db.String(250),  nullable=True)

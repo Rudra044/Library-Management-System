@@ -99,8 +99,6 @@ def delete_user():
     if user:
         delete(user)
         return jsonify({'message': 'Your profile is deleted'})
-    else:
-        return jsonify({'error': 'User cannot be deleted'})
 
 
 @app.route('/change_password', methods=['POST'])
@@ -361,9 +359,6 @@ def update_author_details(author_id):
         author.nationality = nationality
     update_details()
     return jsonify({'message': 'Author details updated successfully'})
-
-
-
 
 
 if __name__ == "__main__":
