@@ -1,4 +1,4 @@
-from models import db
+from app.models.models import db
 
 
 def new_add(new):
