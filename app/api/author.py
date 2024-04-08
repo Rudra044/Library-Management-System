@@ -3,6 +3,11 @@ from flask_migrate import Migrate
 from app.models.models import db, Author
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from app.utils import new_add, delete, update_details
+from app.services.library_services import author_filter, author_id_all_filter, author_id_filter, author_all, author_get
+from app.error_management.success import success_response
+from app.error_management.error import error_response
+from app.validators.validation import check_author_required_fields
+
 
 bp = bp = Blueprint('autho', __name__, url_prefix='/auth')
 
@@ -14,33 +19,31 @@ def add_author():
     author_name = data.get('author_name')
     biography = data.get('biography')
     nationality = data.get('nationality') 
-    if author_name and biography:
-        if Author.query.filter(db.and_(Author.profile_id == user_id, Author.author_name == author_name 
-                                    , Author.biography == biography)).first():
-            return jsonify({'error':'Author is already added by you.'}),400
-        else:
-             
-            new_author = Author(author_name=author_name, biography=biography, nationality=nationality
-                        ,profile_id=user_id)
-            new_add(new_author)
-            
-            return jsonify({'message': 'New author added'})
+    if not check_author_required_fields(data):
+         return error_response("0400",  'Mandatory fields need to be provided')
+
+    if author_filter(user_id, author_name, biography):
+        return error_response("0400", 'Author is already added by you.')
     else:
-        return jsonify({'error': 'Provide valid fields' }),400
+             
+        new_author = Author(author_name=author_name, biography=biography, nationality=nationality
+                        ,profile_id=user_id)
+        new_add(new_author)
+        return success_response(201, "Success", "New author added")
     
 
 @bp.route('/author', defaults={'author_id': None}, methods=['GET'])
 @bp.route('/author/<int:author_id>', methods=['GET'])
 def get_author(author_id=None): 
     if author_id is None:
-        all_authors = Author.query.all()
+        all_authors = author_all()
         author_list = []
         for author in all_authors:
             author_list.append({
                  'id': author.id,
                  'author_name': author.author_name, })
         return jsonify(author_list)
-    author_details = Author.query.get(author_id)
+    author_details = author_get(author_id)
     if author_details:
         return jsonify({
             'id': author_details.id,
@@ -48,7 +51,7 @@ def get_author(author_id=None):
             'biography': author_details.biography,
             'nationality': author_details.nationality, })
     else:
-        return jsonify({'error': 'Author not found'}),404
+        return error_response("0404", 'Author not found') 
     
 
 @bp.route('/author/delete', defaults={'author_id': None}, methods=['DELETE'])
@@ -57,16 +60,18 @@ def get_author(author_id=None):
 def delete_author_details(author_id):
     user_id = get_jwt_identity()
     if author_id is None:
-        authors = Author.query.filter(Author.profile_id == user_id).all()
+        authors = author_id_all_filter(user_id)
         for author in authors:
             delete(author)
-        return jsonify({'message': 'All authors added by you are deleted.'})
-    author = Author.query.filter(db.and_(Author.profile_id == user_id, Author.id == author_id)).first()
+            return success_response(200, "Success", "All authors added by you are deleted.")
+
+    author = author_id_filter(user_id, author_id)
     if author:
         delete(author)
-        return jsonify({'message': 'Author Details deleted'})
+        return success_response(200, "Success", "Author Details deleted")
+
     else:
-        return jsonify({'error': 'Author is not added by you.'}),400
+        return error_response("0404",  'Author not found') 
 
 
 @bp.route('/author/update/<int:author_id>', methods=['PATCH'])
@@ -78,9 +83,9 @@ def update_author_details(author_id):
     biography = data.get('biography')
     nationality = data.get('nationality')
 
-    author = Author.query.filter(db.and_( Author.profile_id == user_id, Author.id == author_id )).first()
+    author = author_id_filter(user_id, author_id)
     if not author:
-        return jsonify({'error':'Book is not present.'}),404
+        return error_response("0404",  'Author not found') 
     
     if author_name:
         author.author_name = author_name
@@ -89,4 +94,4 @@ def update_author_details(author_id):
     if nationality:
         author.nationality = nationality
     update_details()
-    return jsonify({'message': 'Author details updated successfully'})
+    return success_response(200, "Success", "Author details updated successfully")

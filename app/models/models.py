@@ -1,11 +1,12 @@
 from flask_sqlalchemy import SQLAlchemy
 
+
 db = SQLAlchemy()
 
 
 
 class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer,autoincrement=True, primary_key=True)
     email_id = db.Column(db.String(250), unique=True, nullable=False)
     first_name = db.Column(db.String(250),  nullable=True)
     last_name=db.Column(db.String(250),  nullable=True)
@@ -23,7 +24,7 @@ class User(db.Model):
 
 class Books(db.Model):
       __tablename__ = "Books"
-      id = db.Column(db.Integer, primary_key=True)
+      id = db.Column(db.Integer,autoincrement=True, primary_key=True)
       title = db.Column(db.String(250), nullable=False)
       author = db.Column(db.String(250), nullable=False)
       isbn = db.Column(db.String(250),  nullable=False)
@@ -41,7 +42,7 @@ class Books(db.Model):
 
 class Author(db.Model):
       __tablename__= "Author"
-      id = db.Column(db.Integer, primary_key=True)
+      id = db.Column(db.Integer,autoincrement=True, primary_key=True)
       author_name= db.Column(db.String(250), nullable=False)
       biography = db.Column(db.String(5000), nullable=False)
       nationality = db.Column(db.String(250),  nullable=False)
@@ -53,6 +54,8 @@ class Author(db.Model):
             self.biography =  biography
             self.nationality = nationality
             self.profile_id=profile_id
+
+
 
 
             
