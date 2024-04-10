@@ -19,19 +19,14 @@ def add_book():
     data = request.json
     if not check_book_required_fields(data):
         return error_response("0400",  'Mandatory fields need to be provided')
-    title = data.get('title')
-    author = data.get('author')
-    isbn = data.get('isbn')
-    genre = data.get('genre')
-    publication_year = data.get('publication_year') 
-    if  book_filter(user_id,title,author):
+    if  book_filter(user_id,data.get('title'),data.get('author')):
         return error_response("0400", 'Book is already added by you.')
     else:
-        new_book = Books(title=title, author=author, isbn=isbn,
-                             genre=genre, publication_year=publication_year, 
+        new_book = Books(data.get('title'),data.get('author'),data.get('isbn'),
+                             data.get('genre'), data.get('publication_year'), 
                              profile_id=user_id)
         new_add(new_book)
-        return success_response(201, "Success", "New book added")
+        return success_response(201, "Success", "New book added",new_book.id)
     
     
 @bp.route('/book/update/<int:book_id>', methods=['PATCH'])
@@ -59,7 +54,7 @@ def update_book_details(book_id):
     if genre:
         book.genre = genre
     update_details()
-    return success_response(200, "Success", "Book details updated successfully")
+    return success_response(200, "Success", "Book details updated successfully",book.id)
     
 
 @bp.route('/book/delete/<int:book_id>', methods=['DELETE'])

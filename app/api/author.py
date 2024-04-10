@@ -15,21 +15,18 @@ bp = bp = Blueprint('autho', __name__, url_prefix='/auth')
 @jwt_required()
 def add_author():
     user_id = get_jwt_identity()
-    data = request.json
-    author_name = data.get('author_name')
-    biography = data.get('biography')
-    nationality = data.get('nationality') 
+    data = request.json 
     if not check_author_required_fields(data):
          return error_response("0400",  'Mandatory fields need to be provided')
 
-    if author_filter(user_id, author_name, biography):
+    if author_filter(user_id, data.get('author_name'), data.get('biography')):
         return error_response("0400", 'Author is already added by you.')
     else:
              
-        new_author = Author(author_name=author_name, biography=biography, nationality=nationality
+        new_author = Author(data.get('author_name'),data.get('biography'), data.get('nationality')
                         ,profile_id=user_id)
         new_add(new_author)
-        return success_response(201, "Success", "New author added")
+        return success_response(201, "Success", "New author added",new_author.id)
     
 
 @bp.route('/author', defaults={'author_id': None}, methods=['GET'])
@@ -94,4 +91,4 @@ def update_author_details(author_id):
     if nationality:
         author.nationality = nationality
     update_details()
-    return success_response(200, "Success", "Author details updated successfully")
+    return success_response(200, "Success", "Author details updated successfully",author.id)
