@@ -13,3 +13,4 @@ def delete(info):
 
 def update_details():
     db.session.commit()
+

@@ -1,6 +1,7 @@
-def success_response(data=None, message="Success", detail=None):
+def success_response(code=None, message="Success", detail=None,id=None):
     response = {
-        "data": data,
+        "code":code,
+        "id": id,
         "message": message,
         "detail": detail or message,
         "status": True

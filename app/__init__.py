@@ -1,12 +1,10 @@
-from flask import Flask, request, jsonify
+from flask import Flask
 from flask_migrate import Migrate
 from app.models.models import  db
 from flask_bcrypt import Bcrypt
-from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
-from flask_mail import Mail, Message
-from urllib.parse import unquote_plus, quote_plus
+from flask_jwt_extended import JWTManager
+from flask_mail import Mail
 from config import Config
-import os
 
 bcrypt = Bcrypt()
 jwt = JWTManager()
