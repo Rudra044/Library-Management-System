@@ -1,4 +1,4 @@
-from app.models.models import User,db
+from app.models.models import User, db
 
 
 def user_filter(email_id):

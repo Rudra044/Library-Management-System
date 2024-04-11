@@ -7,7 +7,7 @@ def error_response(error_code, detail=None):
         "code": error_code[1:],
         "category": category_desc,
         "detail": detail,
-        "status": False
+        "status": False 
     }
 
     

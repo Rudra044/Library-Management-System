@@ -26,7 +26,13 @@ def add_book():
                              data.get('genre'), data.get('publication_year'), 
                              profile_id=user_id)
         new_add(new_book)
-        return success_response(201, "Success", "New book added",new_book.id)
+        book_data = {
+        'email_id': new_book.email_id,
+        'first_name': new_book.first_name,
+        'last_name': new_book.last_name,
+        'phone_number': new_book.phone_number
+    }
+        return success_response(201, "Success", "New book added",book_data)
     
     
 @bp.route('/book/update/<int:book_id>', methods=['PATCH'])
@@ -54,7 +60,13 @@ def update_book_details(book_id):
     if genre:
         book.genre = genre
     update_details()
-    return success_response(200, "Success", "Book details updated successfully",book.id)
+    book_data = {
+        'email_id': book.email_id,
+        'first_name': book.first_name,
+        'last_name': book.last_name,
+        'phone_number': book.phone_number
+    }
+    return success_response(200, "Success", "Book details updated successfully",book_data)
     
 
 @bp.route('/book/delete/<int:book_id>', methods=['DELETE'])

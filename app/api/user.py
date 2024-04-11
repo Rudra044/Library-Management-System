@@ -12,7 +12,7 @@ from app.error_management.success import success_response
 from app.error_management.error import error_response
 from app.validators.validation import check_user_required_fields
 
-expires = datetime.now() + timedelta(seconds=30)
+
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 
 
@@ -27,7 +27,13 @@ def create_user():
     new_user = User(data.get('email_id'), data.get('first_name'), data.get('last_name'),
                         data.get('phone_number'), password=hashed_password)
     new_add(new_user)
-    return success_response(201,"Success", "User created successfully")
+    user_data = {
+        'email_id': new_user.email_id,
+        'first_name': new_user.first_name,
+        'last_name': new_user.last_name,
+        'phone_number': new_user.phone_number
+    }
+    return success_response(201,"Success", "User created successfully",user_data)
 
 @bp.route('/login', methods=['POST'])
 def login():
@@ -81,7 +87,13 @@ def update_information():
     if last_name:
         user.last_name = last_name
     update_details()
-    return success_response(200, "Success", "User details are updated successfully")
+    user_data = {
+        'email_id': user.email_id,
+        'first_name': user.first_name,
+        'last_name': user.last_name,
+        'phone_number': user.phone_number
+    }
+    return success_response(200, "Success", "User details are updated successfully",user)
 
 
 @bp.route('/delete', methods=['DELETE'])
@@ -127,38 +139,34 @@ def change_password():
 def forget_password():
     data = request.json
     email_id = data.get('email_id')
-    user=user_filter(email_id)
+    user = user_filter(email_id)
     if not user:
          return error_response("0404",  'User not found')
     else:  
         expires = datetime.now() + timedelta(seconds=30)
         token = secrets.token_urlsafe(4)
         encoded_email_id  = base64.b64encode(email_id.encode('utf-8')).decode('utf-8')
-        expires = base64.b64encode(str(expires).encode('utf-8')).decode('utf-8')
-        reset_link = f'http://127.0.0.1:5000/reset_password{encoded_email_id}/{token}/{expires}'
+        user.expire_time = expires
+        reset_link = os.getenv('RESET')+(encoded_email_id)+'/'+(token)
         msg = Message( 'Hello', 
                 sender=os.getenv('MAIL_USERNAME'),
                 recipients=[email_id]) 
         msg.body =  f'Hello,\n\nYour reset code is/ {reset_link}'
         mail.send(msg)
-        user.password_change_token = token
+        user.flag = True
         update_details()
         return success_response(200, "Success", "The Mail is Send.")
 
 
 
-@bp.route('/reset_password/<encoded_email_id>/<token>/<expires>', methods=['POST'])
-def reset_password(encoded_email_id,token,expires):
+@bp.route('/reset_password/<encoded_email_id>/<token>', methods=['POST'])
+def reset_password(encoded_email_id,token):
     email_id = base64.b64decode(encoded_email_id).decode('utf-8') 
-    expires = base64.b64decode(expires).decode('utf-8') 
     data = request.json
     new_password = data.get('new_password')
     confirm_new_password = data.get('confirm_new_password')
-    user = user_filter_token(email_id,token)
-    print(user)
+    user = user_filter(email_id)
     current_time=datetime.now()
-    expires = datetime.strptime(
-    expires, '%Y-%m-%d %H:%M:%S.%f')
     if not user:
         return error_response("0404",  'User not found')
     if not new_password:
@@ -167,10 +175,10 @@ def reset_password(encoded_email_id,token,expires):
         return error_response("0400",  'Confirm_New password not provided')
     if confirm_new_password != new_password:
         return error_response("0400",  'Confirm_New password and new password field not match')
-    if user and current_time<=expires:
+    if user and current_time<=user.expire_time and user.flag == True:
         hashed_password = bcrypt.generate_password_hash(new_password).decode('utf-8')
         user.password = hashed_password
-        user.password_change_token = None
+        user.flag =False
         update_details()
         return success_response(200, "Success", "Password reset successfully")
     else:
