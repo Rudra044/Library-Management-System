@@ -26,7 +26,13 @@ def add_author():
         new_author = Author(data.get('author_name'),data.get('biography'), data.get('nationality')
                         ,profile_id=user_id)
         new_add(new_author)
-        return success_response(201, "Success", "New author added",new_author.id)
+        author_data = {
+        'email_id': new_author.email_id,
+        'first_name': new_author.first_name,
+        'last_name': new_author.last_name,
+        'phone_number': new_author.phone_number
+    }
+        return success_response(201, "Success", "New author added",author_data)
     
 
 @bp.route('/author', defaults={'author_id': None}, methods=['GET'])
@@ -91,4 +97,10 @@ def update_author_details(author_id):
     if nationality:
         author.nationality = nationality
     update_details()
-    return success_response(200, "Success", "Author details updated successfully",author.id)
+    author_data = {
+        'email_id': author.email_id,
+        'first_name': author.first_name,
+        'last_name': author.last_name,
+        'phone_number': author.phone_number
+    }
+    return success_response(200, "Success", "Author details updated successfully",author_data)

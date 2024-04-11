@@ -12,16 +12,17 @@ class User(db.Model):
     last_name=db.Column(db.String(250),  nullable=True)
     phone_number=db.Column(db.String(250), unique=True, nullable=True)
     password = db.Column(db.String(250), nullable=False)
-    password_change_token=db.Column(db.String(250),nullable=True)
+    expire_time=db.Column(db.DateTime)
+    flag = db.Column(db.Boolean, default=False)
 
 
-    def __init__(self, email_id, first_name, last_name, phone_number,password):
+    def __init__(self, email_id, first_name, last_name, phone_number,password,expire_time):
             self.email_id = email_id
             self.first_name = first_name
             self.last_name = last_name
             self.phone_number = phone_number
             self.password = password
-
+            self.expire_time = expire_time
 
 class Books(db.Model):
       __tablename__ = "Books"

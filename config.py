@@ -15,3 +15,4 @@ class Config():
     MAIL_USE_TLS = True
     MAIL_USE_SSL = False
     SECRET_KEY = os.getenv('SECRET_KEY')
+
