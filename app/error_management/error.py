@@ -13,6 +13,7 @@ def error_response(error_code, detail=None):
     
     return response
 
+
 error_category = {
     '0': 'Validation Error',
     '1': 'Internal Error',
