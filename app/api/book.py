@@ -1,5 +1,5 @@
-from flask import Flask, request, jsonify, Blueprint
-from app.models.models import db, Books
+from flask import request, jsonify, Blueprint
+from app.models.models import Books
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.utils import new_add, delete, update_details
 from app.services.library_services import book_filter, book_id_filter, book_get, book_all
@@ -8,8 +8,7 @@ from app.error_management.error import error_response
 from app.validators.validation import check_book_required_fields
 
 
-
-bp = bp = Blueprint('authe', __name__, url_prefix='/auth')
+bp = Blueprint('authe', __name__, url_prefix='/auth')
 
 
 @bp.route('/book/add', methods=['POST'])
@@ -19,18 +18,20 @@ def add_book():
     data = request.json
     if not check_book_required_fields(data):
         return error_response("0400",  'Mandatory fields need to be provided')
-    if  book_filter(user_id,data.get('title'),data.get('author')):
+    if  book_filter(user_id, data.get('title'), data.get('author')):
         return error_response("0400", 'Book is already added by you.')
     else:
-        new_book = Books(data.get('title'),data.get('author'),data.get('isbn'),
+        new_book = Books(data.get('title'), data.get('author'), data.get('isbn'),
                              data.get('genre'), data.get('publication_year'), 
                              profile_id=user_id)
         new_add(new_book)
         book_data = {
-        'email_id': new_book.email_id,
-        'first_name': new_book.first_name,
-        'last_name': new_book.last_name,
-        'phone_number': new_book.phone_number
+        'id': new_book.id,
+        'title': new_book.title,
+        'author': new_book.author,
+        'isbn': new_book.isbn,
+        'genre':new_book.genre,
+        'publication_year': new_book.publication_year
     }
         return success_response(201, "Success", "New book added",book_data)
     
@@ -45,26 +46,27 @@ def update_book_details(book_id):
     isbn = data.get('isbn')
     genre = data.get('genre')
     publication_year = data.get('publication_year')
-    book = book_id_filter(user_id,book_id)
+    book = book_id_filter(user_id, book_id)
     if not book:
         return error_response("0404",  'Book not found')  
     
     if title:
         book.title = title
     if author:
-        book.Author = author
+        book.author = author
     if isbn:
-        book.ISBN = isbn
+        book.isbn = isbn
     if publication_year:
-        book.Publication_year = publication_year
+        book.publication_year = publication_year
     if genre:
         book.genre = genre
     update_details()
     book_data = {
-        'email_id': book.email_id,
-        'first_name': book.first_name,
-        'last_name': book.last_name,
-        'phone_number': book.phone_number
+        'id': book.id,
+        'title': book.title,
+        'author': book.author,
+        'isbn': book.isbn,
+        'publication_year': book.publication_year
     }
     return success_response(200, "Success", "Book details updated successfully",book_data)
     
@@ -73,7 +75,7 @@ def update_book_details(book_id):
 @jwt_required()
 def delete_book_details(book_id):
     user_id = get_jwt_identity()
-    book = book_id_filter(user_id,book_id)
+    book = book_id_filter(user_id, book_id)
     if book:
         delete(book)
         return success_response(200, "Success",  "Book deleted")
@@ -104,4 +106,4 @@ def get_books(book_id):
             'publication_year': book.publication_year
         })
     else:
-       return error_response("0404", 'Book not found') 
+       return error_response("0404", 'Book not found')

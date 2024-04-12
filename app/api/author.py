@@ -1,5 +1,4 @@
-from flask import Flask, request, jsonify, Blueprint
-from flask_migrate import Migrate
+from flask import request, jsonify, Blueprint
 from app.models.models import db, Author
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from app.utils import new_add, delete, update_details
@@ -17,20 +16,20 @@ def add_author():
     user_id = get_jwt_identity()
     data = request.json 
     if not check_author_required_fields(data):
-         return error_response("0400",  'Mandatory fields need to be provided')
+        return error_response("0400",  'Mandatory fields need to be provided')
 
     if author_filter(user_id, data.get('author_name'), data.get('biography')):
         return error_response("0400", 'Author is already added by you.')
     else:
              
-        new_author = Author(data.get('author_name'),data.get('biography'), data.get('nationality')
-                        ,profile_id=user_id)
+        new_author = Author(data.get('author_name'),data.get('biography'),data.get('nationality')
+                    ,profile_id=user_id)
         new_add(new_author)
         author_data = {
-        'email_id': new_author.email_id,
-        'first_name': new_author.first_name,
-        'last_name': new_author.last_name,
-        'phone_number': new_author.phone_number
+        'id': new_author.id,
+        'author_name': new_author.author_name,
+        'biography': new_author.biography,
+        'nationality': new_author.nationality
     }
         return success_response(201, "Success", "New author added",author_data)
     
@@ -98,9 +97,9 @@ def update_author_details(author_id):
         author.nationality = nationality
     update_details()
     author_data = {
-        'email_id': author.email_id,
-        'first_name': author.first_name,
-        'last_name': author.last_name,
-        'phone_number': author.phone_number
+        'id': author.id,
+        'author_name': author.author_name,
+        'biography': author.biography,
+        'nationality': author.nationality
     }
-    return success_response(200, "Success", "Author details updated successfully",author_data)
+    return success_response(200, "Success", "Author details updated successfully", author_data)
