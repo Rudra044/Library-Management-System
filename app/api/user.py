@@ -44,12 +44,33 @@ def login():
        password = data.get('password')
        user = user_filter(email_id)
        if user and bcrypt.check_password_hash(user.password, password):
+           
            access_token = create_access_token(identity=user.id)
+           user.wrong_password_count = 1
+           update_details()
            return jsonify({'access_token': access_token})
+       elif not bcrypt.check_password_hash(user.password, password):
+           while user.wrong_password_count:
+                if user.wrong_password_count < 3:
+                    user.wrong_password_count += 1
+                    update_details()
+                    return error_response('0400','wrong password attempts remaining ')
+                else:
+                    token = secrets.token_urlsafe(4)
+                    encoded_email_id = base64.b64encode(email_id.encode('utf-8')).decode('utf-8')
+                    token = base64.b64encode(token.encode('utf-8')).decode('utf-8')
+                    (encoded_email_id)+(token)
+                    reset_link = os.getenv('RESET')+(encoded_email_id)+'/'+(token)
+                    msg = Message( 'Hello', 
+                    sender = os.getenv('MAIL_USERNAME'),
+                    recipients = [email_id]) 
+                    msg.body =  f'Hello,\n\nYour reset code is/ {reset_link}'
+                    mail.send(msg)
+                    return error_response('0400', 'Your have made 3 wrong password attempts.Mail is send to your registered email_id.')
        else:
-           return error_response('0400',' wrong email_id or password.')
+           return error_response('0400', ' wrong email_id or password.')
     else:
-        return error_response("0400",'Invalid email or password')
+        return error_response("0400", 'Invalid email or password')
 
    
 @bp.route('/information', methods=['GET'])
@@ -144,7 +165,7 @@ def forget_password():
     user = user_filter(email_id)
     user_id = user.id
     if not user:
-         return error_response("0404",  'User not found')
+         return error_response("0404", 'User not found')
     else:  
         user_present = user_check(user_id)
         if not user_present:
@@ -184,15 +205,15 @@ def reset_password(encoded_email_id,token):
     token_encode =  base64.b64decode(user_info.link).decode('utf-8')
     current_time = datetime.now()
     if not user:
-        return error_response("0404",  'User not found')
+        return error_response("0404", 'User not found')
     if not new_password:
-        return error_response("0400",  'New password not provided')
+        return error_response("0400", 'New password not provided')
     if not confirm_new_password:
-        return error_response("0400",  'Confirm_New password not provided')
+        return error_response("0400", 'Confirm_New password not provided')
     if confirm_new_password != new_password:
-        return error_response("0400",  'Confirm_New password and new password field not match')
+        return error_response("0400", 'Confirm_New password and new password field not match')
     if not user_info:
-        return  error_response("0400",  'Invalid user provided')
+        return  error_response("0400", 'Invalid user provided')
     if current_time>user_info.expire_time :
         return error_response("0400",  'Token expired')
     if user_info.flag == False:
