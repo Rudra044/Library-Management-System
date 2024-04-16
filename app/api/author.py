@@ -1,6 +1,7 @@
 from flask import request, jsonify, Blueprint
-from app.models.models import db, Author
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
+
+from app.models.models import db, Author
 from app.utils import new_add, delete, update_details
 from app.services.library_services import author_filter, author_id_all_filter, author_id_filter, author_all, author_get
 from app.error_management.success import success_response
