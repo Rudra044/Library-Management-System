@@ -11,6 +11,7 @@ class User(db.Model):
     last_name = db.Column(db.String(250),  nullable=True)
     phone_number = db.Column(db.String(250), unique=True, nullable=True)
     password = db.Column(db.String(250), nullable=False)
+    wrong_password_count = db.Column(db.Integer, default = 1)
 
 
     def __init__(self, email_id, first_name, last_name, phone_number, password):
